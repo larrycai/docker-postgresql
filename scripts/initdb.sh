@@ -24,6 +24,6 @@ pre_start_action
 #wait_for_postgres_and_run_post_start_action &
 
 # Start PostgreSQL
-echo "PostgreSQL... is initialized to new place $DATA_DIR"
+echo "PostgreSQL... is initialized to new place $DATA"
 #echo "Start postgresql in background"
 #su postgres -c '/usr/pgsql-9.3/bin/postgres -D /var/lib/pgsql/9.3/data'
