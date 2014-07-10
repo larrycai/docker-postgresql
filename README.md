@@ -60,7 +60,7 @@ In order to use new data, the container needs to be initialzed
 
 ``` shell
 $ mkdir -p /tmp/postgresql
-$ docker run -i -t -v /tmp/postgresql:/data larrycai/postgresql /initdb
+$ docker run -p 5432:5432 --name="postgresql" -i -t -v /tmp/postgresql:/data -e DB="db" -e USER="user" -e PASS="user" larrycai/postgresql /initdb
 ```
 
 Actually it moves the initialized the db to new volume 

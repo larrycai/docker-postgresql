@@ -1,5 +1,5 @@
-USER=${USER:-super}
-PASS=${PASS:-super}
+USER=${USER:-db}
+PASS=${PASS:-db}
 
 pre_start_action() {
   # Echo out info to later obtain by running `docker logs container_name`
@@ -28,21 +28,18 @@ pre_start_action() {
 
 post_start_action() {
   echo "Creating the superuser: $USER"
-  setuser postgres psql -q <<-EOF
+  su - postgres -c psql <<-EOF
     DROP ROLE IF EXISTS $USER;
-    CREATE ROLE $USER WITH ENCRYPTED PASSWORD '$PASS';
-    ALTER USER $USER WITH ENCRYPTED PASSWORD '$PASS';
-    ALTER ROLE $USER WITH SUPERUSER;
-    ALTER ROLE $USER WITH LOGIN;
+    create USER $USER with NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '$PASS';
 EOF
 
   # create database if requested
   if [ ! -z "$DB" ]; then
     for db in $DB; do
-      echo "Creating database: $db"
-      setuser postgres psql -q <<-EOF
-      CREATE DATABASE $db WITH OWNER=$USER ENCODING='UTF8';
-      GRANT ALL ON DATABASE $db TO $USER
+      echo "Creating database: $DB"
+      su - postgres -c psql <<-EOF
+      create database $USER with OWNER $USER TEMPLATE template0 ENCODING 'UTF8';
+      CREATE SCHEMA AUTHORIZATION $USER;
 EOF
     done
   fi
@@ -50,9 +47,9 @@ EOF
   if [[ ! -z "$EXTENSIONS" && ! -z "$DB" ]]; then
     for extension in $EXTENSIONS; do
       for db in $DB; do
-        echo "Installing extension for $db: $extension"
+        echo "Installing extension for $DB: $extension"
         # enable the extension for the user's database
-        setuser postgres psql $db <<-EOF
+        su - postgres -c psql <<-EOF
         CREATE EXTENSION "$extension";
 EOF
       done
